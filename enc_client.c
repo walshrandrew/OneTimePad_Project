@@ -45,7 +45,6 @@ int isKeyValid(char *text, const char *key)
     fprintf(stderr, "Key is too short");
     exit(1);
   } 
-  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -82,7 +81,11 @@ int main(int argc, char *argv[]) {
   // Remove the trailing \n that fgets adds
   buffer[strcspn(buffer, "\n")] = '\0'; 
   // check key length to input file length (both have '\0')
-  isKeyValid(buffer, key);
+  if(strlen(buffer) > strlen(key))
+  {
+    fprintf(stderr, "input bigger than Key");
+    exit(1);
+  }
 
   // Send message to server
   // Write to the server
