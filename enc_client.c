@@ -20,20 +20,12 @@ void error(const char *msg) {
 } 
 
 // Set up the address struct
-void setupAddressStruct(struct sockaddr_in* address, 
-                        int portNumber, 
-                        char* hostname){
- 
-  // Clear out the address struct
-  memset((char*) address, '\0', sizeof(*address)); 
-
-  // The address should be network capable
-  address->sin_family = AF_INET;
-  // Store the port number
-  address->sin_port = htons(portNumber);
-
-  // Get the DNS entry for this host name
-  struct hostent* hostInfo = gethostbyname(hostname); 
+void setupAddressStruct(struct sockaddr_in* address, int portNumber, char* hostname)
+{ 
+  memset((char*) address, '\0', sizeof(*address));   // Clear out the address struct
+  address->sin_family = AF_INET;  // The address should be network capable
+  address->sin_port = htons(portNumber);  // Store the port number
+  struct hostent* hostInfo = gethostbyname(hostname);   // Get the DNS entry for this host name
   if (hostInfo == NULL) { 
     fprintf(stderr, "CLIENT: ERROR, no such host\n"); 
     exit(0); 
@@ -44,10 +36,24 @@ void setupAddressStruct(struct sockaddr_in* address,
         hostInfo->h_length);
 }
 
+// measures key length by input length
+// if key too short, exit(1)?
+int isKeyValid(char *text, const char *key)
+{
+  if(strlen(text) > strlen(key))
+  {
+    fprintf(stderr, "Key is too short");
+    exit(1);
+  } 
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int socketFD, charsWritten, charsRead;
   struct sockaddr_in serverAddress;
   char buffer[256];
+  const char *key = argv[3];
+
   // Check usage & args
   if (argc < 3) { 
     fprintf(stderr,"USAGE: %s hostname port\n", argv[0]); 
@@ -75,6 +81,8 @@ int main(int argc, char *argv[]) {
   fgets(buffer, sizeof(buffer) - 1, stdin);
   // Remove the trailing \n that fgets adds
   buffer[strcspn(buffer, "\n")] = '\0'; 
+  // check key length to input file length (both have '\0')
+  isKeyValid(buffer, key);
 
   // Send message to server
   // Write to the server
