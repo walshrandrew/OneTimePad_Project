@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-int main(int agrc, char* argv[])
+int main(int argc, char* argv[])
 {
     long keylength = strtol(argv[1], NULL, 10);
     int key; 
@@ -10,7 +10,7 @@ int main(int agrc, char* argv[])
     srand(time(0)); //seed random number
     char valid[28] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 
-    if(agrc != 2 || keylength <= 0)
+    if(argc != 2 || keylength <= 0)
     {
         fprintf(stderr, "Error: argv incorrect\n");
         exit(1);
