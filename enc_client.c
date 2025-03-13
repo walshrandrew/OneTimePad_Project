@@ -36,7 +36,7 @@ void setupAddressStruct(struct sockaddr_in* address, int portNumber, char* hostn
         hostInfo->h_length);
 }
 
-// measures key length by input length
+/*measures key length by input length
 // if key too short, exit(1)?
 int isKeyValid(char *text, const char *key)
 {
@@ -46,6 +46,8 @@ int isKeyValid(char *text, const char *key)
     exit(1);
   } 
 }
+*/ 
+
 
 int main(int argc, char *argv[]) {
   int socketFD, charsWritten, charsRead;
@@ -83,7 +85,7 @@ int main(int argc, char *argv[]) {
   // check key length to input file length (both have '\0')
   if(strlen(buffer) > strlen(key))
   {
-    fprintf(stderr, "input bigger than Key");
+    fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
   }
 
