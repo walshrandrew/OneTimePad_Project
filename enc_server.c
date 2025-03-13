@@ -13,8 +13,7 @@ void error(const char *msg) {
 } 
 
 // Set up the address struct for the server socket
-void setupAddressStruct(struct sockaddr_in* address, 
-                        int portNumber){
+void setupAddressStruct(struct sockaddr_in* address, int portNumber){
  
   // Clear out the address struct
   memset((char*) address, '\0', sizeof(*address)); 
@@ -49,9 +48,7 @@ int main(int argc, char *argv[]){
   setupAddressStruct(&serverAddress, atoi(argv[1]));
 
   // Associate the socket to the port
-  if (bind(listenSocket, 
-          (struct sockaddr *)&serverAddress, 
-          sizeof(serverAddress)) < 0){
+  if (bind(listenSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0){
     error("ERROR on binding");
   }
 
@@ -61,16 +58,12 @@ int main(int argc, char *argv[]){
   // Accept a connection, blocking if one is not available until one connects
   while(1){
     // Accept the connection request which creates a connection socket
-    connectionSocket = accept(listenSocket, 
-                (struct sockaddr *)&clientAddress, 
-                &sizeOfClientInfo); 
+    connectionSocket = accept(listenSocket, (struct sockaddr *)&clientAddress, &sizeOfClientInfo); 
     if (connectionSocket < 0){
       error("ERROR on accept");
     }
 
-    printf("SERVER: Connected to client running at host %d port %d\n", 
-                          ntohs(clientAddress.sin_addr.s_addr),
-                          ntohs(clientAddress.sin_port));
+    printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
 
     // Get the message from the client and display it
     memset(buffer, '\0', 256);
