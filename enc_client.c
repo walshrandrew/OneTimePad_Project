@@ -15,13 +15,13 @@
 * 3. Print the message received from the server and exit the program.
 */
 
-// Error function used for reporting issues
+// FUNCTION: Error function used for reporting issues
 void error(const char *msg) { 
   perror(msg); 
   exit(0); 
 } 
 
-// Set up the address struct
+// FUNCTION: Set up the address struct
 void setupAddressStruct(struct sockaddr_in* address, int portNumber, char* hostname)
 { 
   memset((char*) address, '\0', sizeof(*address));   // Clear out the address struct
@@ -38,12 +38,52 @@ void setupAddressStruct(struct sockaddr_in* address, int portNumber, char* hostn
         hostInfo->h_length);
 }
 
-//return file size
+//FUNCTION: returns file size for measuring file content. > checks plaintext > keygen
 long fsize(const char* filename) {
   struct stat st;
   stat(filename, &st);
   return st.st_size;
 }
+
+// FUNCTION: Sends to server while checking all data is sent
+int justGonnaSendIt(int s, char *buf, size_t len)
+{
+  int sent = 0;
+  int remaining = len;
+  int n;
+
+  while(sent < len)
+  {
+    n = send(s, buf + sent, remaining, 0);
+    if(n == -1) { break; }
+    sent += n;
+    remaining -= n;
+  }
+  len = sent; //number sent to server
+  return n == -1? -1:0; //-1 failure, 0 success
+}
+
+//FUNCTION: Receives from server while checking all data is received
+// REVIEW BEFORE USE, I ONLY COPIED THE jsutGonnaSendIt and changed variable names
+int justGonnaTakeIt(int s, char *buf, int *len)
+{
+  int received = 0;
+  int remaining = *len;
+  int n;
+
+  while(received < *len)
+  {
+    n = recv(s, buf + received, remaining, 0);
+    if(n == -1) { break; }
+    received += n;
+    remaining -= n;
+  }
+  *len = received; //number sent to server
+  return n == -1? -1:0; //-1 failure, 0 success
+}
+
+//FUNCTION: Read file content into a buffer for sending packages.
+
 
 /*
 * argv[0] == hostname
@@ -68,10 +108,8 @@ int main(int argc, char *argv[]) {
   if (socketFD < 0){
     error("CLIENT: ERROR opening socket");
   }
-
    // Set up the server address struct
   setupAddressStruct(&serverAddress, atoi(argv[3]), "localhost");
-
   // Connect to server
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
     error("CLIENT: ERROR connecting");
@@ -84,17 +122,22 @@ int main(int argc, char *argv[]) {
   fgets(buffer, sizeof(buffer) - 1, stdin);
   // Remove the trailing \n that fgets adds
   buffer[strcspn(buffer, "\n")] = '\0'; 
+
   // check key length to input file length (both have '\0')
-  //debugprints
   long plaintext = fsize(file);
   long keysize = fsize(key);
-  //printf("file: '%ld'\n", plaintext); //buffer == user-input
-  //printf("Key: '%ld'\n", keysize); // key == myshortkey NOT the contents of the file: WRGNFLOYRI
   if(plaintext > keysize)
   {
     fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
   }
+
+  //Send hostname (argv0) to server for verification.
+  justGonnaSendIt(socketFD, argv[0], strlen(argv[0]));
+
+  //while loop that handles send() & recv()
+  // inside loop: 
+  //    - open files > read to buffer > send to server making sure everything is sent
 
   // Send message to server
   // Write to the server
