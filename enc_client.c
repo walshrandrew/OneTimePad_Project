@@ -64,21 +64,20 @@ int justGonnaSendIt(int s, char *buf, size_t len)
 }
 
 //FUNCTION: Receives from server while checking all data is received
-// REVIEW BEFORE USE, I ONLY COPIED THE jsutGonnaSendIt and changed variable names
-int justGonnaTakeIt(int s, char *buf, int *len)
+int justGonnaTakeIt(int s, char *buf, size_t len)
 {
   int received = 0;
-  int remaining = *len;
+  int remaining = len;
   int n;
 
-  while(received < *len)
+  while(received < len)
   {
     n = recv(s, buf + received, remaining, 0);
     if(n == -1) { break; }
     received += n;
     remaining -= n;
   }
-  *len = received; //number sent to server
+  len = received; //number received
   return n == -1? -1:0; //-1 failure, 0 success
 }
 

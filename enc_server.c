@@ -26,9 +26,31 @@ void setupAddressStruct(struct sockaddr_in* address, int portNumber){
   address->sin_addr.s_addr = INADDR_ANY;
 }
 
+//FUNCTION: Receives from client while checking all data is received
+int justGonnaTakeIt(int s, char *buf, size_t len)
+{
+  int received = 0;
+  int remaining = len;
+  int n;
+
+  while(received < len)
+  {
+    n = recv(s, buf + received, remaining, 0);
+    if(n == -1) { break; }
+    received += n;
+    remaining -= n;
+  }
+  len = received; //number received
+  return n == -1? -1:0; //-1 failure, 0 success
+}
+
 int main(int argc, char *argv[]){
   int connectionSocket, charsRead;
   char buffer[256];
+  char hostName[256];
+  char text[80000];
+  char key[80000];
+  char res[80000];
   struct sockaddr_in serverAddress, clientAddress;
   socklen_t sizeOfClientInfo = sizeof(clientAddress);
 
@@ -56,7 +78,8 @@ int main(int argc, char *argv[]){
   listen(listenSocket, 5); 
   
   // Accept a connection, blocking if one is not available until one connects
-  while(1){
+  while(1)
+  {
     // Accept the connection request which creates a connection socket
     connectionSocket = accept(listenSocket, (struct sockaddr *)&clientAddress, &sizeOfClientInfo); 
     if (connectionSocket < 0){
@@ -64,6 +87,15 @@ int main(int argc, char *argv[]){
     }
 
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
+
+    // Validate incoming connections. Close if not same as server name
+    justGonnaTakeIt(connectionSocket, hostName, sizeof(hostName));
+    if(strncmp(hostName, argv[0], 3) != 0)
+    {
+      fprintf(stderr, "Error: Client name does not match server name");
+      close(connectionSocket);
+    }
+    
 
     // Get the message from the client and display it
     memset(buffer, '\0', 256);
