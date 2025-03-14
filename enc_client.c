@@ -60,7 +60,6 @@ int main(int argc, char *argv[]) {
     fprintf(stderr,"USAGE: %s hostname port\n", argv[0]); 
     exit(0); 
   } 
-
   // Create a socket
   socketFD = socket(AF_INET, SOCK_STREAM, 0); 
   if (socketFD < 0){
@@ -83,10 +82,14 @@ int main(int argc, char *argv[]) {
   // Remove the trailing \n that fgets adds
   buffer[strcspn(buffer, "\n")] = '\0'; 
   // check key length to input file length (both have '\0')
+  //debugprints
+  printf("Buffer: '%s'\n", buffer);
+  printf("Key: '%s'\n", key);
   if(strlen(buffer) > strlen(key))
   {
     fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
+    return 1;
   }
 
   // Send message to server
