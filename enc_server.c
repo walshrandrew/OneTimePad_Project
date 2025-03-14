@@ -89,12 +89,13 @@ int main(int argc, char *argv[]){
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
 
     // Validate incoming connections. Close if not same as server name
-    justGonnaTakeIt(connectionSocket, hostName, sizeof(hostName));
-    if(strncmp(hostName, argv[0], 3) != 0)
-    {
-      fprintf(stderr, "Error: Client name does not match server name");
-      close(connectionSocket);
-    }
+    //justGonnaTakeIt(connectionSocket, hostName, sizeof(hostName));
+    //if(strncmp(hostName, argv[0], 3) != 0)
+    //{
+      //fprintf(stderr, "Error: Client name does not match server name");
+      //close(connectionSocket);
+      //continue;
+    //}
     
 
     // Get the message from the client and display it
