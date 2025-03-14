@@ -45,6 +45,12 @@ long fsize(const char* filename) {
   return st.st_size;
 }
 
+/*
+* argv[0] == hostname
+* argv[1] == plaintext1 (file to be encoded)
+* argv[2] == myshortkey (OTP)
+* argv[3] == Port Number to connect to
+*/
 int main(int argc, char *argv[]) {
   int socketFD, charsWritten, charsRead;
   struct sockaddr_in serverAddress;
@@ -82,8 +88,8 @@ int main(int argc, char *argv[]) {
   //debugprints
   long plaintext = fsize(file);
   long keysize = fsize(key);
-  printf("file: '%ld'\n", plaintext); //buffer == user-input
-  printf("Key: '%ld'\n", keysize); // key == myshortkey NOT the contents of the file: WRGNFLOYRI
+  //printf("file: '%ld'\n", plaintext); //buffer == user-input
+  //printf("Key: '%ld'\n", keysize); // key == myshortkey NOT the contents of the file: WRGNFLOYRI
   if(plaintext > keysize)
   {
     fprintf(stderr, "Error: key '%s' is too short", key);
