@@ -5,6 +5,8 @@
 #include <sys/types.h>  // ssize_t
 #include <sys/socket.h> // send(),recv()
 #include <netdb.h>      // gethostbyname()
+#include <sys/stat.h>   // fstat
+
 
 /**
 * Client code
@@ -36,24 +38,19 @@ void setupAddressStruct(struct sockaddr_in* address, int portNumber, char* hostn
         hostInfo->h_length);
 }
 
-/*measures key length by input length
-// if key too short, exit(1)?
-int isKeyValid(char *text, const char *key)
-{
-  if(strlen(text) > strlen(key))
-  {
-    fprintf(stderr, "Key is too short");
-    exit(1);
-  } 
+//return file size
+long fsize(const char* filename) {
+  struct stat st;
+  stat(filename, &st);
+  return st.st_size;
 }
-*/ 
-
 
 int main(int argc, char *argv[]) {
   int socketFD, charsWritten, charsRead;
   struct sockaddr_in serverAddress;
   char buffer[256];
   const char *key = argv[2];
+  const char *file = argv[1];
 
   // Check usage & args
   if (argc < 3) { 
@@ -83,13 +80,14 @@ int main(int argc, char *argv[]) {
   buffer[strcspn(buffer, "\n")] = '\0'; 
   // check key length to input file length (both have '\0')
   //debugprints
-  printf("Buffer: '%s'\n", buffer);
-  printf("Key: '%s'\n", key);
-  if(strlen(buffer) > strlen(key))
+  long plaintext = fsize(file);
+  long keysize = fsize(key);
+  printf("file: '%ld'\n", plaintext); //buffer == user-input
+  printf("Key: '%ld'\n", keysize); // key == myshortkey NOT the contents of the file: WRGNFLOYRI
+  if(plaintext > keysize)
   {
     fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
-    return 1;
   }
 
   // Send message to server
