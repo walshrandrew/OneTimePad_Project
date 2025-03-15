@@ -88,14 +88,6 @@ int main(int argc, char *argv[]){
 
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
 
-    // Validate incoming connections. Close if not same as server name
-    //justGonnaTakeIt(connectionSocket, hostName, sizeof(hostName));
-    //if(strncmp(hostName, argv[0], 3) != 0)
-    //{
-      //fprintf(stderr, "Error: Client name does not match server name");
-      //close(connectionSocket);
-      //continue;
-    //}
     
 
     // Get the message from the client and display it
@@ -107,9 +99,21 @@ int main(int argc, char *argv[]){
     }
     printf("SERVER: I received this from the client: \"%s\"\n", buffer);
 
+    // Validate incoming connections. Close if not same as server name
+    if(strcmp(buffer, "enc") != 0 )
+    {
+      fprintf(stderr, "Wrong client tried to connect to me!\n");
+      close(connectionSocket);
+      continue;
+    }
+    else 
+    {
+      fprintf(stderr, "Successfully connected!\n");
+    }
+
+
     // Send a Success message back to the client
-    charsRead = send(connectionSocket, 
-                    "I am the server, and I got your message", 39, 0); 
+    charsRead = send(connectionSocket, "I am the server, and I got your message", 39, 0); 
     if (charsRead < 0){
       error("ERROR writing to socket");
     }

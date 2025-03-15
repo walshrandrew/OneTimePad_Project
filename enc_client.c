@@ -51,6 +51,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
   int sent = 0;
   int remaining = len;
   int n;
+  fprintf(stderr, "Bytes started with: %ld\n", len);
 
   while(sent < len)
   {
@@ -60,6 +61,8 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
+  fprintf(stderr, "Bytes sent to server: %ld\n", len);
+  fprintf(stderr, "Bytes remaining: %d\n", remaining);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -69,6 +72,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   int received = 0;
   int remaining = len;
   int n;
+
 
   while(received < len)
   {
@@ -96,6 +100,7 @@ int main(int argc, char *argv[]) {
   char buffer[256];
   const char *key = argv[2];
   const char *file = argv[1];
+  char msg[4] = "enc";
 
   // Check usage & args
   if (argc < 3) { 
@@ -107,9 +112,8 @@ int main(int argc, char *argv[]) {
   if (socketFD < 0){
     error("CLIENT: ERROR opening socket");
   }
-   // Set up the server address struct
+   // Set up the server address struct & connect
   setupAddressStruct(&serverAddress, atoi(argv[3]), "localhost");
-  // Connect to server
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
     error("CLIENT: ERROR connecting");
   }
@@ -130,9 +134,27 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
   }
+  // check keysize to input filesize, if keysize bigger, chop it to same size
+  //if(keysize < plaintext)
+  //{
+  //  ;
+  //}
 
-  //Send hostname (argv0) to server for verification.
-  justGonnaSendIt(socketFD, argv[0], strlen(argv[0]));
+
+  //Send "enc" to server for verification.
+  if(justGonnaSendIt(socketFD, msg, strlen(msg)) == -1)
+  {
+    perror("justgonnasendit");
+    fprintf(stderr, "We only sent %ld bytes because of error!\n", strlen(msg));
+    exit(1);
+  }
+  if(justGonnaTakeIt(socketFD, msg, strlen(msg)) == -1)
+  {
+    perror("justgonnatakeit");
+    fprintf(stderr, "We only received %ld bytes because of error!\n", strlen(msg));    
+    exit(1);
+  }
+
 
   //while loop that handles send() & recv()
   // inside loop: 
