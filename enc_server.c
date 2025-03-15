@@ -41,7 +41,26 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
+  fprintf(stderr, "Bytes Received: %ld\n", len);
   return n == -1? -1:0; //-1 failure, 0 success
+}
+
+//FUNCTION: Read file content into a buffer for packages.
+char *readFiles(const char *file, long size)
+{
+  FILE *fp = fopen(file, "r");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "Error, can't read NULL files\n");
+    exit(1);
+  }
+
+  char *buffer = malloc(size + 1);
+  size_t bytes = fread(buffer, 1, size, fp);
+  //buffer[strcspn(buffer, "\n")] = '\0';
+  
+  fclose(fp);
+  return buffer;
 }
 
 int main(int argc, char *argv[]){
@@ -88,12 +107,12 @@ int main(int argc, char *argv[]){
 
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
 
-    
-
     // Get the message from the client and display it
     memset(buffer, '\0', 256);
     // Read the client's message from the socket
-    charsRead = recv(connectionSocket, buffer, 255, 0); 
+    charsRead = recv(connectionSocket, buffer, 255, 0);
+    buffer[strcspn(buffer, "\n")] = '\0'; 
+
     if (charsRead < 0){
       error("ERROR reading from socket");
     }
@@ -110,6 +129,19 @@ int main(int argc, char *argv[]){
     {
       fprintf(stderr, "Successfully connected!\n");
     }
+
+    // ---- BEGIN RECEIVING PACAKGES ----
+    long fileSize, keySize;
+    //recv file first
+    recv(connectionSocket, &fileSize, sizeof(fileSize), 0); 
+    justGonnaTakeIt(connectionSocket, res, fileSize);       
+    //recv key
+    recv(connectionSocket, &keySize, sizeof(keySize), 0);  
+    justGonnaTakeIt(connectionSocket, key, keySize);
+    //read them and encyrpt the 'res' file
+    char *res = readFiles(res, fileSize);                 //remember to free
+    char *key = readFiles(key, keySize);                 //remember to free
+
 
 
     // Send a Success message back to the client

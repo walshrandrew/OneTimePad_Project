@@ -89,7 +89,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
 char *readFiles(const char *file, long size)
 {
   FILE *fp = fopen(file, "r");
-  if(file == NULL)
+  if(fp == NULL)
   {
     fprintf(stderr, "Error, can't read NULL files\n");
     exit(1);
@@ -97,7 +97,7 @@ char *readFiles(const char *file, long size)
 
   char *buffer = malloc(size + 1);
   size_t bytes = fread(buffer, 1, size, fp);
-  buffer[bytes] = '\0';
+  buffer[strcspn(buffer, "\n")] = '\0';
   
   fclose(fp);
   return buffer;
