@@ -13,8 +13,7 @@ void error(const char *msg) {
 } 
 
 // Set up the address struct for the server socket
-void setupAddressStruct(struct sockaddr_in* address, 
-                        int portNumber){
+void setupAddressStruct(struct sockaddr_in* address, int portNumber){
  
   // Clear out the address struct
   memset((char*) address, '\0', sizeof(*address)); 
@@ -27,9 +26,31 @@ void setupAddressStruct(struct sockaddr_in* address,
   address->sin_addr.s_addr = INADDR_ANY;
 }
 
+//FUNCTION: Receives from client while checking all data is received
+int justGonnaTakeIt(int s, char *buf, size_t len)
+{
+  int received = 0;
+  int remaining = len;
+  int n;
+
+  while(received < len)
+  {
+    n = recv(s, buf + received, remaining, 0);
+    if(n == -1) { break; }
+    received += n;
+    remaining -= n;
+  }
+  len = received; //number received
+  return n == -1? -1:0; //-1 failure, 0 success
+}
+
 int main(int argc, char *argv[]){
   int connectionSocket, charsRead;
   char buffer[256];
+  char hostName[256];
+  char text[80000];
+  char key[80000];
+  char res[80000];
   struct sockaddr_in serverAddress, clientAddress;
   socklen_t sizeOfClientInfo = sizeof(clientAddress);
 
@@ -49,9 +70,7 @@ int main(int argc, char *argv[]){
   setupAddressStruct(&serverAddress, atoi(argv[1]));
 
   // Associate the socket to the port
-  if (bind(listenSocket, 
-          (struct sockaddr *)&serverAddress, 
-          sizeof(serverAddress)) < 0){
+  if (bind(listenSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0){
     error("ERROR on binding");
   }
 
@@ -59,18 +78,17 @@ int main(int argc, char *argv[]){
   listen(listenSocket, 5); 
   
   // Accept a connection, blocking if one is not available until one connects
-  while(1){
+  while(1)
+  {
     // Accept the connection request which creates a connection socket
-    connectionSocket = accept(listenSocket, 
-                (struct sockaddr *)&clientAddress, 
-                &sizeOfClientInfo); 
+    connectionSocket = accept(listenSocket, (struct sockaddr *)&clientAddress, &sizeOfClientInfo); 
     if (connectionSocket < 0){
       error("ERROR on accept");
     }
 
-    printf("SERVER: Connected to client running at host %d port %d\n", 
-                          ntohs(clientAddress.sin_addr.s_addr),
-                          ntohs(clientAddress.sin_port));
+    printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
+
+    
 
     // Get the message from the client and display it
     memset(buffer, '\0', 256);
@@ -81,9 +99,21 @@ int main(int argc, char *argv[]){
     }
     printf("SERVER: I received this from the client: \"%s\"\n", buffer);
 
+    // Validate incoming connections. Close if not same as server name
+    if(strcmp(buffer, "dec") != 0 )
+    {
+      fprintf(stderr, "Wrong client tried to connect to me!\n");
+      close(connectionSocket);
+      continue;
+    }
+    else 
+    {
+      fprintf(stderr, "Successfully connected!\n");
+    }
+
+
     // Send a Success message back to the client
-    charsRead = send(connectionSocket, 
-                    "I am the server, and I got your message", 39, 0); 
+    charsRead = send(connectionSocket, "I am the server, and I got your message", 39, 0); 
     if (charsRead < 0){
       error("ERROR writing to socket");
     }
@@ -94,4 +124,3 @@ int main(int argc, char *argv[]){
   close(listenSocket); 
   return 0;
 }
-
