@@ -86,7 +86,22 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
 }
 
 //FUNCTION: Read file content into a buffer for sending packages.
+char *readFiles(const char *file, long size)
+{
+  FILE *fp = fopen(file, "r");
+  if(file == NULL)
+  {
+    fprintf(stderr, "Error, can't read NULL files\n");
+    exit(1);
+  }
 
+  char *buffer = malloc(size + 1);
+  size_t bytes = fread(buffer, 1, size, fp);
+  buffer[bytes] = '\0';
+  
+  fclose(fp);
+  return buffer;
+}
 
 /*
 * argv[0] == hostname
@@ -129,17 +144,17 @@ int main(int argc, char *argv[]) {
   //buffer[strcspn(buffer, "\n")] = '\0'; 
 
   // check key length to input file length (both have '\0')
-  long plaintext = fsize(file);
+  long filesize = fsize(file);
   long keysize = fsize(key);
-  if(plaintext > keysize)
+  if(filesize > keysize)
   {
     fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
   }
   // check keysize to input filesize, if keysize bigger, chop it to same size
-  if(keysize > plaintext)
+  if(keysize > filesize)
   {
-    keysize = plaintext;
+    keysize = filesize;
   }
 
 
@@ -151,6 +166,35 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
+
+  // Read plaintext and keygen files to a buffer to send to server
+  char *fileBuffer = readFiles(file, filesize);   //used malloc, remember to free
+  char *keyBuffer = readFiles(key, keysize);       //used malloc, remember to free
+
+  // send size of file, then file
+  send(socketFD, &filesize, sizeof(filesize), 0);
+  justGonnaSendIt(socketFD, fileBuffer, filesize);
+  free(fileBuffer);
+
+  // send size of key, then file
+  send(socketFD, &keysize, sizeof(keysize), 0);
+  justGonnaSendIt(socketFD, keyBuffer, keysize);
+  free(keyBuffer);
+
+  //receive encrypted file from server
+  char *encyrptedFile;
+  if(justGonnaTakeIt(socketFD, encyrptedFile, filesize) != 0)
+  {
+    perror("justgonnatakeit");
+    fprintf(stderr, "Encyrpted file is too big\n");
+    exit(1);
+  }
+
+  //send encrypted file and key to dec_client
+
+
+
+  
 
 
   //while loop that handles send() & recv()
