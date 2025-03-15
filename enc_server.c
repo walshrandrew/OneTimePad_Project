@@ -111,8 +111,6 @@ int main(int argc, char *argv[]){
     memset(buffer, '\0', 256);
     // Read the client's message from the socket
     charsRead = recv(connectionSocket, buffer, 255, 0);
-    buffer[strcspn(buffer, "\n")] = '\0'; 
-
     if (charsRead < 0){
       error("ERROR reading from socket");
     }
