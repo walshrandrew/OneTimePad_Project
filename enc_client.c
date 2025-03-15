@@ -73,7 +73,6 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   int remaining = len;
   int n;
 
-
   while(received < len)
   {
     n = recv(s, buf + received, remaining, 0);
@@ -82,6 +81,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
+  fprintf(stderr, "Bytes Received: %ld\n", len);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -114,6 +114,8 @@ int main(int argc, char *argv[]) {
   }
    // Set up the server address struct & connect
   setupAddressStruct(&serverAddress, atoi(argv[3]), "localhost");
+  int val = 1;
+  setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)); //allow reuse of port
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
     error("CLIENT: ERROR connecting");
   }
@@ -122,9 +124,9 @@ int main(int argc, char *argv[]) {
   // Clear out the buffer array
   memset(buffer, '\0', sizeof(buffer));
   // Get input from the user, trunc to buffer - 1 chars, leaving \0
-  fgets(buffer, sizeof(buffer) - 1, stdin);
+  //fgets(buffer, sizeof(buffer) - 1, stdin);
   // Remove the trailing \n that fgets adds
-  buffer[strcspn(buffer, "\n")] = '\0'; 
+  //buffer[strcspn(buffer, "\n")] = '\0'; 
 
   // check key length to input file length (both have '\0')
   long plaintext = fsize(file);
@@ -135,10 +137,10 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   // check keysize to input filesize, if keysize bigger, chop it to same size
-  //if(keysize < plaintext)
-  //{
-  //  ;
-  //}
+  if(keysize > plaintext)
+  {
+    keysize = plaintext;
+  }
 
 
   //Send "enc" to server for verification.
@@ -148,12 +150,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "We only sent %ld bytes because of error!\n", strlen(msg));
     exit(1);
   }
-  if(justGonnaTakeIt(socketFD, msg, strlen(msg)) == -1)
-  {
-    perror("justgonnatakeit");
-    fprintf(stderr, "We only received %ld bytes because of error!\n", strlen(msg));    
-    exit(1);
-  }
+
 
 
   //while loop that handles send() & recv()
@@ -162,23 +159,23 @@ int main(int argc, char *argv[]) {
 
   // Send message to server
   // Write to the server
-  charsWritten = send(socketFD, buffer, strlen(buffer), 0); 
-  if (charsWritten < 0){
-    error("CLIENT: ERROR writing to socket");
-  }
-  if (charsWritten < strlen(buffer)){
-    printf("CLIENT: WARNING: Not all data written to socket!\n");
-  }
+  //charsWritten = send(socketFD, buffer, strlen(buffer), 0); 
+  //if (charsWritten < 0){
+    //error("CLIENT: ERROR writing to socket");
+  //}
+  //if (charsWritten < strlen(buffer)){
+    //printf("CLIENT: WARNING: Not all data written to socket!\n");
+  //}
 
   // Get return message from server
   // Clear out the buffer again for reuse
-  memset(buffer, '\0', sizeof(buffer));
+  //memset(buffer, '\0', sizeof(buffer));
   // Read data from the socket, leaving \0 at end
-  charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
-  if (charsRead < 0){
-    error("CLIENT: ERROR reading from socket");
-  }
-  printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
+  //charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
+  //if (charsRead < 0){
+  //  error("CLIENT: ERROR reading from socket");
+  //}
+  //printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
 
   // Close the socket
   close(socketFD); 
