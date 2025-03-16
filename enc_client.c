@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     error("CLIENT: ERROR connecting");
   }
   // Get input message from user
-  printf("CLIENT: Enter text to send to the server, and then hit enter: ");
+  //printf("CLIENT: Enter text to send to the server, and then hit enter: "); //this was being stored in ciphertext1
   // Clear out the buffer array
   memset(buffer, '\0', sizeof(buffer));
   // Get input from the user, trunc to buffer - 1 chars, leaving \0
@@ -198,6 +198,12 @@ int main(int argc, char *argv[]) {
 
   //send encrypted file and key to dec_client
   fprintf(stderr, "Encrypted filetext: %s\n", encryptedFile);
+  //add \n to end of encryptedFile
+  long encyrptedLength = strlen(encryptedFile);
+
+  encryptedFile[encyrptedLength] = '\n';
+  encryptedFile[encyrptedLength + 1] = '\0';
+  fprintf(stdout, "%s", encryptedFile);
 
 
 
