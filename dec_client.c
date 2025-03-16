@@ -100,17 +100,11 @@ char *readFiles(const char *file, long size)
     size_t bytes = fread(buffer, 1, size, fp);
     buffer[bytes] = '\0';  // Null terminate
 
-    // Debug: Print before newline removal
-    fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
-
     // Ensure we remove only the final newline (if it's the last character)
     if (bytes > 0 && buffer[bytes - 1] == '\n') {
         buffer[bytes - 1] = '\0';
         bytes--;  // Adjust the byte count
     }
-
-    // Debug: Print after newline removal
-    fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
 
     fclose(fp);
     return buffer;
@@ -184,9 +178,12 @@ int main(int argc, char *argv[]) {
   // Read plaintext and keygen files to a buffer to send to server
   char *fileBuffer = readFiles(file, filesize);   //used malloc, remember to free
   char *keyBuffer = readFiles(key, keysize);      //used malloc, remember to free
+  filesize = strlen(fileBuffer);
+  keysize = strlen(keyBuffer);
   char ack[3];                                    //ack buffer
 
   // send size of file, then file
+  
   send(socketFD, &filesize, sizeof(filesize), 0);
   recv(socketFD, ack, sizeof(ack), 0);
   justGonnaSendIt(socketFD, fileBuffer, filesize);
@@ -205,17 +202,17 @@ int main(int argc, char *argv[]) {
   if(justGonnaTakeIt(socketFD, dencryptedFile, filesize) != 0)
   {
     perror("justgonnatakeit");
-    fprintf(stderr, "Encyrpted file is too big\n");
+    fprintf(stderr, "dEncyrpted file is too big\n");
     exit(1);
   }
 
   //send encrypted file and key to dec_client
-  fprintf(stderr, "Encrypted filetext: %s\n", dencryptedFile);
+  fprintf(stderr, "dEncrypted filetext: %s\n", dencryptedFile);
   //add \n to end of encryptedFile
-  long encyrptedLength = strlen(dencryptedFile);
+  long dencyrptedLength = strlen(dencryptedFile);
 
-  //encryptedFile[encyrptedLength] = '\n';
-  //encryptedFile[encyrptedLength + 1] = '\0';
+  dencryptedFile[dencyrptedLength] = '\n';
+  dencryptedFile[dencyrptedLength + 1] = '\0';
   fprintf(stdout, "%s", dencryptedFile);
 
   close(socketFD); 
