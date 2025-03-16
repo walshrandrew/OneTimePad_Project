@@ -88,7 +88,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
 //FUNCTION: Read file content into a buffer for sending packages.
 char *readFiles(const char *file, long size)
 {
-  char validChar[28] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+  char validChar[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \n";
   char *buffer = malloc(size + 1);
   FILE *fp = fopen(file, "r");
 
@@ -104,13 +104,6 @@ char *readFiles(const char *file, long size)
   // Read file content
   size_t bytes = fread(buffer, 1, size, fp);
   buffer[bytes] = '\0';  // Null terminate
-
-  // Ensure we remove only the final newline (if it's the last character)
-  if (bytes > 0 && buffer[bytes - 1] == '\n') {
-    buffer[bytes - 1] = '\0';
-    bytes--;  // Adjust the byte count
-  }
-  
 
   //Check file for bad characters (anything not valid):
   for (int i = 0; i < size; i++)
@@ -128,6 +121,11 @@ char *readFiles(const char *file, long size)
   // Debug: Print before newline removal
   //fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
 
+  // Ensure we remove only the final newline (if it's the last character)
+  if (bytes > 0 && buffer[bytes - 1] == '\n') {
+    buffer[bytes - 1] = '\0';
+    bytes--;  // Adjust the byte count
+  }
 
 
   // Debug: Print after newline removal
