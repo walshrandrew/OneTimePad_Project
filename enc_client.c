@@ -88,35 +88,49 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
 //FUNCTION: Read file content into a buffer for sending packages.
 char *readFiles(const char *file, long size)
 {
+  char validChar[28] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+  char *buffer = malloc(size + 1);
   FILE *fp = fopen(file, "r");
+
+  //Check if file is empty
   if(fp == NULL)
   {
     fprintf(stderr, "Error, can't read NULL files\n");
     exit(1);
   }
 
-  char *buffer = malloc(size + 1);
-    // Read file content
-    size_t bytes = fread(buffer, 1, size, fp);
-    buffer[bytes] = '\0';  // Null terminate
-
-    // Debug: Print before newline removal
-    fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
-
-    // Ensure we remove only the final newline (if it's the last character)
-    if (bytes > 0 && buffer[bytes - 1] == '\n') {
-        buffer[bytes - 1] = '\0';
-        bytes--;  // Adjust the byte count
+  //Check file for bad characters (anything not valid):
+  for (size_t i = 0; i < size; i++)
+  {
+    if(strchr(validChar, buffer[i]) == NULL)
+    {
+      fclose(fp);
+      free(buffer);
+      exit(1);
     }
+  }
+
+  // Read file content
+  size_t bytes = fread(buffer, 1, size, fp);
+  buffer[bytes] = '\0';  // Null terminate
+
+  // Debug: Print before newline removal
+  fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
+
+  // Ensure we remove only the final newline (if it's the last character)
+  if (bytes > 0 && buffer[bytes - 1] == '\n') {
+    buffer[bytes - 1] = '\0';
+    bytes--;  // Adjust the byte count
+  }
 
 
-    // Debug: Print after newline removal
-    fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
-    fprintf(stderr, "[DEBUG-SIZE] After newline removal: '%s' (length: %zu)\n", buffer, size);
+  // Debug: Print after newline removal
+  fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
+  fprintf(stderr, "[DEBUG-SIZE] After newline removal: '%s' (length: %zu)\n", buffer, size);
 
 
-    fclose(fp);
-    return buffer;
+  fclose(fp);
+  return buffer;
 }
 
 /*
