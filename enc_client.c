@@ -234,11 +234,15 @@ int main(int argc, char *argv[]) {
 
   //send encrypted file and key to dec_client
   //add \n to end of encryptedFile
-  long encyrptedLength = strlen(encryptedFile);
+  long encyrptedLength = strlen(encryptedFile) + 1;
+  fprintf(stderr, "\nLength of encrypted file: %ld", encyrptedLength);
+
 
   encryptedFile[encyrptedLength] = '\n';
   encryptedFile[encyrptedLength + 1] = '\0';
   fprintf(stdout, "%s", encryptedFile);
+  fprintf(stderr, "\nLength of encrypted file: %ld", encyrptedLength);
+
 
   close(socketFD); 
   return 0;
