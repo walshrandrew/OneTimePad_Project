@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
   char buffer[256];
   const char *key = argv[2];
   const char *file = argv[1];
-  char msg[4] = "dec";
+  char msg[3] = "dec";
   char dencryptedFile[100000];
 
   // Check usage & args

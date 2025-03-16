@@ -128,6 +128,10 @@ int main(int argc, char *argv[]){
   struct sockaddr_in serverAddress, clientAddress;
   socklen_t sizeOfClientInfo = sizeof(clientAddress);
 
+  memset(text, '\0', 80000);
+  memset(key, '\0', 80000);
+  memset(res, '\0', 80000);
+
   // Check usage & args
   if (argc < 2) { 
     fprintf(stderr,"USAGE: %s port\n", argv[0]); 
