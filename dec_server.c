@@ -110,7 +110,7 @@ void otpdecryption(char *text, char* key, long size)
       }
     }
 
-    int decrypted = (numKey - numText + 27) % 27;
+    int decrypted = (numText - numKey + 27) % 27;
     text[i] = valid[decrypted];
   }
 }
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]){
 
       //encrypt here:
       otpdecryption(rescpy, keycpy, fileSize);
-      fprintf(stderr, "Encrypted filetext: %s\n", rescpy);
+      fprintf(stderr, "DEncrypted filetext: %s\n", rescpy);
 
       //send back
       justGonnaSendIt(connectionSocket, rescpy, fileSize);
