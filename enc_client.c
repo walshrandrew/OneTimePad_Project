@@ -97,7 +97,11 @@ char *readFiles(const char *file, long size)
 
   char *buffer = malloc(size + 1);
   size_t bytes = fread(buffer, 1, size, fp);
-  buffer[strcspn(buffer, "\n")] = '\0';
+  buffer[bytes] = '\0';
+  if(bytes > 0 && buffer[bytes -1] == '\n')
+  {
+    buffer[bytes -1] ='\0';
+  }
   
   fclose(fp);
   return buffer;
