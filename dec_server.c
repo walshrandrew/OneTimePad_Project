@@ -84,8 +84,8 @@ char *readFiles(const char *file, long size)
   return buffer;
 }
 
-//FUNCTION: encrypt
-void otpEncryption(char *text, char* key, long size)
+//FUNCTION: decrypt
+void otpdecryption(char *text, char* key, long size)
 {
   int numText, numKey = 0;
   char valid[28] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
@@ -110,12 +110,11 @@ void otpEncryption(char *text, char* key, long size)
       }
     }
 
-    int encyrpted = (numKey + numText) % 27;
-    text[i] = valid[encyrpted];
+    int decrypted = (numKey - numText + 27) % 27;
+    text[i] = valid[decrypted];
   }
 }
 
-//FUNCTION: decrypt
 
 
 int main(int argc, char *argv[]){
@@ -218,7 +217,7 @@ int main(int argc, char *argv[]){
       fprintf(stderr, "received filetext: %s\n", rescpy);
 
       //encrypt here:
-      otpEncryption(rescpy, keycpy, fileSize);
+      otpdecryption(rescpy, keycpy, fileSize);
       fprintf(stderr, "Encrypted filetext: %s\n", rescpy);
 
       //send back
