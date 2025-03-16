@@ -122,8 +122,8 @@ int main(int argc, char *argv[]) {
   char buffer[256];
   const char *key = argv[2];
   const char *file = argv[1];
-  char msg[3] = "dec";
-  char *dencryptedBuffer = malloc(80000 * sizeof(char));
+  char msg[4] = "dec";
+  char *dBuffer = malloc(80000 * sizeof(char));
 
   // Check usage & args
   if (argc < 3) { 
@@ -198,32 +198,32 @@ int main(int argc, char *argv[]) {
   recv(socketFD, ack, sizeof(ack), 0);
 
   long dencryptedLength;
-  //receive encrypted file from server
+  //receive dencrypted file from server
   recv(socketFD, &dencryptedLength, sizeof(dencryptedLength), 0);
   send(socketFD, ack, sizeof(ack), 0);
 
-  justGonnaTakeIt(socketFD, dencryptedBuffer, dencryptedLength);
+  justGonnaTakeIt(socketFD, dBuffer, dencryptedLength);
   send(socketFD, ack, sizeof(ack), 0);
   fprintf(stderr, "\nReceived dencrypted Length: %ld\n", dencryptedLength);
 
   // Resize buffer safely
-  char *temp = realloc(dencryptedBuffer, dencryptedLength + 2);
+  char *temp = realloc(dBuffer, dencryptedLength + 2);
   if (temp == NULL) {
     fprintf(stderr, "Memory reallocation failed\n");
-    free(dencryptedBuffer);
+    free(dBuffer);
     close(socketFD);
     return 1;
   }
-  dencryptedBuffer = temp;
+  dBuffer = temp;
   // Add newline and Null-terminate
-  dencryptedBuffer[dencryptedLength] = '\n';
-  dencryptedBuffer[dencryptedLength + 1] = '\0';
-  fprintf(stderr,"\nAfter adding newline - Buffer content: '%s' (length: %ld)\n", dencryptedBuffer, strlen(dencryptedBuffer));
+  dBuffer[dencryptedLength] = '\n';
+  dBuffer[dencryptedLength + 1] = '\0';
+  fprintf(stderr,"\nAfter adding newline - Buffer content: '%s' (length: %ld)\n", dBuffer, strlen(dBuffer));
 
   // UPdate length after modify buffer
-  dencryptedLength = strlen(dencryptedBuffer);
+  dencryptedLength = strlen(dBuffer);
   fprintf(stderr, "\nUpdated Length of encrypted file: %ld\n", dencryptedLength);
-  fprintf(stdout, "%s", dencryptedBuffer);
+  fprintf(stdout, "%s", dBuffer);
 
   close(socketFD); 
   return 0;

@@ -173,15 +173,10 @@ int main(int argc, char *argv[]){
     // Validate incoming connections. Close if not same as server name
     if(strcmp(buffer, "dec") != 0 )
     {
-      fprintf(stderr, "error");
+      fprintf(stderr, "closing connection socket");
       close(connectionSocket);
       continue;
     }
-    else 
-    {
-      fprintf(stderr, "error");
-    }
-
     
     // ---- HAVING A BABY!!! ----
     pid_t pid = fork();
@@ -214,17 +209,19 @@ int main(int argc, char *argv[]){
 
 
       //read them and encyrpt the 'res' file
-      fprintf(stderr, "error");
-
+      fprintf(stderr, "sending for dencryption...\n");
+      
       //dencrypt here:
       otpdecryption(rescpy, keycpy, fileSize);
-      fprintf(stderr, "error");
+      fprintf(stderr, "done...\n");
+      fprintf(stderr, "\nBuffer content: '%s' (length: %ld)\n", rescpy, strlen(rescpy));
 
       long recpysize = strlen(rescpy);
       //send back size first
       send(connectionSocket, &recpysize, sizeof(recpysize), 0);
       recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
       //send back
+      fprintf(stderr, "sending to dec_client...");
       justGonnaSendIt(connectionSocket, rescpy, fileSize);
       recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
 
