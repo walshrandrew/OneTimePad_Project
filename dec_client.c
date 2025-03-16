@@ -73,7 +73,6 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   int remaining = len;
   int n;
 
-
   while(received < len)
   {
     n = recv(s, buf + received, remaining, 0);
@@ -82,11 +81,27 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
+  fprintf(stderr, "Bytes Received: %ld\n", len);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
 //FUNCTION: Read file content into a buffer for sending packages.
+char *readFiles(const char *file, long size)
+{
+  FILE *fp = fopen(file, "r");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "Error, can't read NULL files\n");
+    exit(1);
+  }
 
+  char *buffer = malloc(size + 1);
+  size_t bytes = fread(buffer, 1, size, fp);
+  buffer[strcspn(buffer, "\n")] = '\0';
+  
+  fclose(fp);
+  return buffer;
+}
 
 /*
 * argv[0] == hostname
@@ -101,6 +116,7 @@ int main(int argc, char *argv[]) {
   const char *key = argv[2];
   const char *file = argv[1];
   char msg[4] = "dec";
+  char encryptedFile[100000];
 
   // Check usage & args
   if (argc < 3) { 
@@ -114,6 +130,8 @@ int main(int argc, char *argv[]) {
   }
    // Set up the server address struct & connect
   setupAddressStruct(&serverAddress, atoi(argv[3]), "localhost");
+  int val = 1;
+  setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)); //allow reuse of port
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
     error("CLIENT: ERROR connecting");
   }
@@ -122,23 +140,23 @@ int main(int argc, char *argv[]) {
   // Clear out the buffer array
   memset(buffer, '\0', sizeof(buffer));
   // Get input from the user, trunc to buffer - 1 chars, leaving \0
-  fgets(buffer, sizeof(buffer) - 1, stdin);
+  //fgets(buffer, sizeof(buffer) - 1, stdin);
   // Remove the trailing \n that fgets adds
-  buffer[strcspn(buffer, "\n")] = '\0'; 
+  //buffer[strcspn(buffer, "\n")] = '\0'; 
 
   // check key length to input file length (both have '\0')
-  long plaintext = fsize(file);
+  long filesize = fsize(file);
   long keysize = fsize(key);
-  if(plaintext > keysize)
+  if(filesize > keysize)
   {
     fprintf(stderr, "Error: key '%s' is too short", key);
     exit(1);
   }
   // check keysize to input filesize, if keysize bigger, chop it to same size
-  //if(keysize < plaintext)
-  //{
-  //  ;
-  //}
+  if(keysize > filesize)
+  {
+    keysize = filesize;
+  }
 
 
   //Send "enc" to server for verification.
@@ -148,12 +166,42 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "We only sent %ld bytes because of error!\n", strlen(msg));
     exit(1);
   }
-  if(justGonnaTakeIt(socketFD, msg, strlen(msg)) == -1)
+
+
+  // Read plaintext and keygen files to a buffer to send to server
+  char *fileBuffer = readFiles(file, filesize);   //used malloc, remember to free
+  char *keyBuffer = readFiles(key, keysize);      //used malloc, remember to free
+  char ack[3];                                    //ack buffer
+
+  // send size of file, then file
+  send(socketFD, &filesize, sizeof(filesize), 0);
+  recv(socketFD, ack, sizeof(ack), 0);
+  justGonnaSendIt(socketFD, fileBuffer, filesize);
+  free(fileBuffer);
+  recv(socketFD, ack, sizeof(ack), 0);
+
+  // send size of key, then file
+  send(socketFD, &keysize, sizeof(keysize), 0);
+  recv(socketFD, ack, sizeof(ack), 0);
+  justGonnaSendIt(socketFD, keyBuffer, keysize);
+  free(keyBuffer);
+  recv(socketFD, ack, sizeof(ack), 0);
+
+
+  //receive encrypted file from server
+  if(justGonnaTakeIt(socketFD, encryptedFile, filesize) != 0)
   {
     perror("justgonnatakeit");
-    fprintf(stderr, "We only received %ld bytes because of error!\n", strlen(msg));    
+    fprintf(stderr, "Encyrpted file is too big\n");
     exit(1);
   }
+
+  //send encrypted file and key to dec_client
+  fprintf(stderr, "Encrypted filetext: %s\n", encryptedFile);
+
+
+
+  
 
 
   //while loop that handles send() & recv()
@@ -162,23 +210,23 @@ int main(int argc, char *argv[]) {
 
   // Send message to server
   // Write to the server
-  charsWritten = send(socketFD, buffer, strlen(buffer), 0); 
-  if (charsWritten < 0){
-    error("CLIENT: ERROR writing to socket");
-  }
-  if (charsWritten < strlen(buffer)){
-    printf("CLIENT: WARNING: Not all data written to socket!\n");
-  }
+  //charsWritten = send(socketFD, buffer, strlen(buffer), 0); 
+  //if (charsWritten < 0){
+    //error("CLIENT: ERROR writing to socket");
+  //}
+  //if (charsWritten < strlen(buffer)){
+    //printf("CLIENT: WARNING: Not all data written to socket!\n");
+  //}
 
   // Get return message from server
   // Clear out the buffer again for reuse
-  memset(buffer, '\0', sizeof(buffer));
+  //memset(buffer, '\0', sizeof(buffer));
   // Read data from the socket, leaving \0 at end
-  charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
-  if (charsRead < 0){
-    error("CLIENT: ERROR reading from socket");
-  }
-  printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
+  //charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
+  //if (charsRead < 0){
+  //  error("CLIENT: ERROR reading from socket");
+  //}
+  //printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
 
   // Close the socket
   close(socketFD); 
