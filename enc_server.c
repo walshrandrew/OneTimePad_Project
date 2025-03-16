@@ -186,28 +186,36 @@ int main(int argc, char *argv[]){
     
     // ---- HAVING A BABY!!! ----
     pid_t pid = fork();
-    if(pid < 0) {perror("error forking your mom!");}
+    if(pid < 0) 
+    {
+      perror("error forking your mom!"); 
+      exit(1);
+    }
     if(pid == 0) 
     {
       close(listenSocket);
       // ---- BEGIN RECEIVING PACAKGES ----
       long fileSize, keySize;
+      char keycpy[80000];
+      char rescpy[80000];
+
       //recv file first
       recv(connectionSocket, &fileSize, sizeof(fileSize), 0); 
-      justGonnaTakeIt(connectionSocket, res, fileSize);       
+      justGonnaTakeIt(connectionSocket, rescpy, fileSize);   
+
       //recv key
       recv(connectionSocket, &keySize, sizeof(keySize), 0);  
-      justGonnaTakeIt(connectionSocket, key, keySize);
+      justGonnaTakeIt(connectionSocket, keycpy, keySize);
+
       //read them and encyrpt the 'res' file
-      fprintf(stderr, "received filetext: %s\n", res);
-      //fprintf(stderr, "Received Key: %s\n", key);
+      fprintf(stderr, "received filetext: %s\n", rescpy);
 
       //encrypt here:
-      otpEncryption(res, key, fileSize);
-      fprintf(stderr, "Encrypted filetext: %s\n", res);
+      otpEncryption(rescpy, keycpy, fileSize);
+      fprintf(stderr, "Encrypted filetext: %s\n", rescpy);
 
       //send back
-      justGonnaSendIt(connectionSocket, res, fileSize);
+      justGonnaSendIt(connectionSocket, rescpy, fileSize);
       close(connectionSocket);
       exit(0);
     }

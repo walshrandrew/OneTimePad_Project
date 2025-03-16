@@ -190,9 +190,8 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  encryptedFile
-
   //send encrypted file and key to dec_client
+  fprintf(stderr, "Encrypted filetext: %s\n", encryptedFile);
 
 
 
