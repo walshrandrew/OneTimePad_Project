@@ -226,14 +226,6 @@ int main(int argc, char *argv[]){
       exit(0);
     }
 
-
-
-    // Send a Success message back to the client
-    //charsRead = send(connectionSocket, "I am the server, and I got your message", 39, 0); 
-    //if (charsRead < 0){
-      //error("ERROR writing to socket");
-    //}
-    // Close the connection socket for this client
     close(connectionSocket); 
   }
   // Close the listening socket

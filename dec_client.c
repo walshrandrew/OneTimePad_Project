@@ -96,11 +96,24 @@ char *readFiles(const char *file, long size)
   }
 
   char *buffer = malloc(size + 1);
-  size_t bytes = fread(buffer, 1, size, fp);
-  buffer[strcspn(buffer, "\n")] = '\0';
-  
-  fclose(fp);
-  return buffer;
+    // Read file content
+    size_t bytes = fread(buffer, 1, size, fp);
+    buffer[bytes] = '\0';  // Null terminate
+
+    // Debug: Print before newline removal
+    fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
+
+    // Ensure we remove only the final newline (if it's the last character)
+    if (bytes > 0 && buffer[bytes - 1] == '\n') {
+        buffer[bytes - 1] = '\0';
+        bytes--;  // Adjust the byte count
+    }
+
+    // Debug: Print after newline removal
+    fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
+
+    fclose(fp);
+    return buffer;
 }
 
 /*
@@ -116,7 +129,7 @@ int main(int argc, char *argv[]) {
   const char *key = argv[2];
   const char *file = argv[1];
   char msg[4] = "dec";
-  char encryptedFile[100000];
+  char dencryptedFile[100000];
 
   // Check usage & args
   if (argc < 3) { 
@@ -136,7 +149,7 @@ int main(int argc, char *argv[]) {
     error("CLIENT: ERROR connecting");
   }
   // Get input message from user
-  printf("CLIENT: Enter text to send to the server, and then hit enter: ");
+  //printf("CLIENT: Enter text to send to the server, and then hit enter: "); //this was being stored in ciphertext1
   // Clear out the buffer array
   memset(buffer, '\0', sizeof(buffer));
   // Get input from the user, trunc to buffer - 1 chars, leaving \0
@@ -189,7 +202,7 @@ int main(int argc, char *argv[]) {
 
 
   //receive encrypted file from server
-  if(justGonnaTakeIt(socketFD, encryptedFile, filesize) != 0)
+  if(justGonnaTakeIt(socketFD, dencryptedFile, filesize) != 0)
   {
     perror("justgonnatakeit");
     fprintf(stderr, "Encyrpted file is too big\n");
@@ -197,38 +210,14 @@ int main(int argc, char *argv[]) {
   }
 
   //send encrypted file and key to dec_client
-  fprintf(stderr, "Encrypted filetext: %s\n", encryptedFile);
+  fprintf(stderr, "Encrypted filetext: %s\n", dencryptedFile);
+  //add \n to end of encryptedFile
+  long encyrptedLength = strlen(dencryptedFile);
 
+  //encryptedFile[encyrptedLength] = '\n';
+  //encryptedFile[encyrptedLength + 1] = '\0';
+  fprintf(stdout, "%s", dencryptedFile);
 
-
-  
-
-
-  //while loop that handles send() & recv()
-  // inside loop: 
-  //    - open files > read to buffer > send to server making sure everything is sent
-
-  // Send message to server
-  // Write to the server
-  //charsWritten = send(socketFD, buffer, strlen(buffer), 0); 
-  //if (charsWritten < 0){
-    //error("CLIENT: ERROR writing to socket");
-  //}
-  //if (charsWritten < strlen(buffer)){
-    //printf("CLIENT: WARNING: Not all data written to socket!\n");
-  //}
-
-  // Get return message from server
-  // Clear out the buffer again for reuse
-  //memset(buffer, '\0', sizeof(buffer));
-  // Read data from the socket, leaving \0 at end
-  //charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
-  //if (charsRead < 0){
-  //  error("CLIENT: ERROR reading from socket");
-  //}
-  //printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
-
-  // Close the socket
   close(socketFD); 
   return 0;
 }

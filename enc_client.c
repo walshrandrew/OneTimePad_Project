@@ -218,36 +218,6 @@ int main(int argc, char *argv[]) {
   //encryptedFile[encyrptedLength + 1] = '\0';
   fprintf(stdout, "%s", encryptedFile);
 
-
-
-  
-
-
-  //while loop that handles send() & recv()
-  // inside loop: 
-  //    - open files > read to buffer > send to server making sure everything is sent
-
-  // Send message to server
-  // Write to the server
-  //charsWritten = send(socketFD, buffer, strlen(buffer), 0); 
-  //if (charsWritten < 0){
-    //error("CLIENT: ERROR writing to socket");
-  //}
-  //if (charsWritten < strlen(buffer)){
-    //printf("CLIENT: WARNING: Not all data written to socket!\n");
-  //}
-
-  // Get return message from server
-  // Clear out the buffer again for reuse
-  //memset(buffer, '\0', sizeof(buffer));
-  // Read data from the socket, leaving \0 at end
-  //charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
-  //if (charsRead < 0){
-  //  error("CLIENT: ERROR reading from socket");
-  //}
-  //printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
-
-  // Close the socket
   close(socketFD); 
   return 0;
 }
