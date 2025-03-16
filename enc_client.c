@@ -109,8 +109,11 @@ char *readFiles(const char *file, long size)
         bytes--;  // Adjust the byte count
     }
 
+
     // Debug: Print after newline removal
     fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
+    fprintf(stderr, "[DEBUG-SIZE] After newline removal: '%s' (length: %zu)\n", buffer, size);
+
 
     fclose(fp);
     return buffer;
@@ -184,9 +187,12 @@ int main(int argc, char *argv[]) {
   // Read plaintext and keygen files to a buffer to send to server
   char *fileBuffer = readFiles(file, filesize);   //used malloc, remember to free
   char *keyBuffer = readFiles(key, keysize);      //used malloc, remember to free
+  filesize = strlen(fileBuffer);
+  keysize = strlen(keyBuffer);
   char ack[3];                                    //ack buffer
 
   // send size of file, then file
+  
   send(socketFD, &filesize, sizeof(filesize), 0);
   recv(socketFD, ack, sizeof(ack), 0);
   justGonnaSendIt(socketFD, fileBuffer, filesize);
@@ -214,8 +220,8 @@ int main(int argc, char *argv[]) {
   //add \n to end of encryptedFile
   long encyrptedLength = strlen(encryptedFile);
 
-  //encryptedFile[encyrptedLength] = '\n';
-  //encryptedFile[encyrptedLength + 1] = '\0';
+  encryptedFile[encyrptedLength] = '\n';
+  encryptedFile[encyrptedLength + 1] = '\0';
   fprintf(stdout, "%s", encryptedFile);
 
   close(socketFD); 
