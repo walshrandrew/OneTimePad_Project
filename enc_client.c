@@ -105,31 +105,34 @@ char *readFiles(const char *file, long size)
   size_t bytes = fread(buffer, 1, size, fp);
   buffer[bytes] = '\0';  // Null terminate
 
-  //Check file for bad characters (anything not valid):
-  for (int i = 0; i < size; i++)
-  {
-    if(strchr(validChar, buffer[i]) == NULL)
-    {
-      fclose(fp);
-      free(buffer);
-      exit(1);
-      fprintf(stderr, "error\n");
-    }
-  }
-
-  // Debug: Print before newline removal
-  fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
-
   // Ensure we remove only the final newline (if it's the last character)
   if (bytes > 0 && buffer[bytes - 1] == '\n') {
     buffer[bytes - 1] = '\0';
     bytes--;  // Adjust the byte count
   }
+  
+
+  //Check file for bad characters (anything not valid):
+  for (int i = 0; i < size; i++)
+  {
+    if(strchr(validChar, buffer[i]) == NULL)
+    {
+      fprintf(stderr, "Invalid character '%c' found at index %d\n", buffer[i], i);
+      fclose(fp);
+      free(buffer);
+      fprintf(stderr, "enc_client error: input contains bad characters\n");
+      exit(1);
+    }
+  }
+
+  // Debug: Print before newline removal
+  //fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
+
 
 
   // Debug: Print after newline removal
-  fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
-  fprintf(stderr, "[DEBUG-SIZE] After newline removal: '%s' (length: %zu)\n", buffer, size);
+  //fprintf(stderr, "[DEBUG] After newline removal: '%s' (length: %zu)\n", buffer, bytes);
+  //fprintf(stderr, "[DEBUG-SIZE] After newline removal: '%s' (length: %zu)\n", buffer, size);
 
 
   fclose(fp);
