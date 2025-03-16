@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
   const char *key = argv[2];
   const char *file = argv[1];
   char msg[4] = "enc";
+  char *encryptedFile;
 
   // Check usage & args
   if (argc < 3) { 
@@ -182,8 +183,7 @@ int main(int argc, char *argv[]) {
   free(keyBuffer);
 
   //receive encrypted file from server
-  char *encyrptedFile;
-  if(justGonnaTakeIt(socketFD, encyrptedFile, filesize) != 0)
+  if(justGonnaTakeIt(socketFD, encryptedFile, filesize) != 0)
   {
     perror("justgonnatakeit");
     fprintf(stderr, "Encyrpted file is too big\n");

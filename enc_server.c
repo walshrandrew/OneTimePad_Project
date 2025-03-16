@@ -45,6 +45,27 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
+// FUNCTION: Sends to client while checking all data is sent
+int justGonnaSendIt(int s, char *buf, size_t len)
+{
+  int sent = 0;
+  int remaining = len;
+  int n;
+  fprintf(stderr, "Bytes started with: %ld\n", len);
+
+  while(sent < len)
+  {
+    n = send(s, buf + sent, remaining, 0);
+    if(n == -1) { break; }
+    sent += n;
+    remaining -= n;
+  }
+  len = sent; //number sent to server
+  fprintf(stderr, "Bytes sent to server: %ld\n", len);
+  fprintf(stderr, "Bytes remaining: %d\n", remaining);
+  return n == -1? -1:0; //-1 failure, 0 success
+}
+
 //FUNCTION: Read file content into a buffer for packages.
 char *readFiles(const char *file, long size)
 {
@@ -62,6 +83,40 @@ char *readFiles(const char *file, long size)
   fclose(fp);
   return buffer;
 }
+
+//FUNCTION: encrypt
+void otpEncryption(char *text, char* key, long size)
+{
+  int numText, numKey = 0;
+  char valid[28] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
+  for (long i = 0; i < size; i++)
+  {
+    for(int j = 0; j < 27; j++)
+    {
+      if(text[i] == valid[j])
+      {
+        numText = j;
+        break;
+      }
+    }
+    
+    for(int j = 0; j < 27; j++)
+    {
+      if(key[i] == valid[j])
+      {
+        numKey = j;
+        break;
+      }
+    }
+
+    int encyrpted = (numKey + numText) % 27;
+    text[i] = valid[encyrpted];
+  }
+}
+
+//FUNCTION: decrypt
+
 
 int main(int argc, char *argv[]){
   int connectionSocket, charsRead;
@@ -128,17 +183,33 @@ int main(int argc, char *argv[]){
       fprintf(stderr, "Successfully connected!\n");
     }
 
-    // ---- BEGIN RECEIVING PACAKGES ----
-    long fileSize, keySize;
-    //recv file first
-    recv(connectionSocket, &fileSize, sizeof(fileSize), 0); 
-    justGonnaTakeIt(connectionSocket, res, fileSize);       
-    //recv key
-    recv(connectionSocket, &keySize, sizeof(keySize), 0);  
-    justGonnaTakeIt(connectionSocket, key, keySize);
-    //read them and encyrpt the 'res' file
-    char *res = readFiles(res, fileSize);                 //remember to free
-    char *key = readFiles(key, keySize);                 //remember to free
+    // ---- HAVING A BABY!!! ----
+    pid_t pid = fork();
+    if(pid < 0) {perror("error forking your mom!");}
+    if(pid == 0) 
+    {
+      close(listenSocket);
+      // ---- BEGIN RECEIVING PACAKGES ----
+      long fileSize, keySize;
+      //recv file first
+      recv(connectionSocket, &fileSize, sizeof(fileSize), 0); 
+      justGonnaTakeIt(connectionSocket, res, fileSize);       
+      //recv key
+      recv(connectionSocket, &keySize, sizeof(keySize), 0);  
+      justGonnaTakeIt(connectionSocket, key, keySize);
+      //read them and encyrpt the 'res' file
+      //fprintf(stderr, "received filetext: %s\n", res);
+      //fprintf(stderr, "Received Key: %s\n", key);
+
+      //encrypt here:
+      otpEncryption(res, key, fileSize);
+
+      //send back
+      justGonnaSendIt(connectionSocket, res, fileSize);
+      close(connectionSocket);
+      exit(0);
+    }
+
 
 
 
