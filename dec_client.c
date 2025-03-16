@@ -51,7 +51,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
   int sent = 0;
   int remaining = len;
   int n;
-  fprintf(stderr, "Bytes started with: %ld\n", len);
+  fprintf(stderr, "error");
 
   while(sent < len)
   {
@@ -61,8 +61,8 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
-  fprintf(stderr, "Bytes sent to server: %ld\n", len);
-  fprintf(stderr, "Bytes remaining: %d\n", remaining);
+  fprintf(stderr, "error");
+  fprintf(stderr, "error");
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -81,7 +81,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
-  fprintf(stderr, "Bytes Received: %ld\n", len);
+  fprintf(stderr, "error");
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -91,7 +91,7 @@ char *readFiles(const char *file, long size)
   FILE *fp = fopen(file, "r");
   if(fp == NULL)
   {
-    fprintf(stderr, "Error, can't read NULL files\n");
+    fprintf(stderr, "error");
     exit(1);
   }
 
@@ -127,20 +127,20 @@ int main(int argc, char *argv[]) {
 
   // Check usage & args
   if (argc < 3) { 
-    fprintf(stderr,"USAGE: %s hostname port\n", argv[0]); 
+    fprintf(stderr, "error"); 
     exit(0); 
   } 
   // Create a socket
   socketFD = socket(AF_INET, SOCK_STREAM, 0); 
   if (socketFD < 0){
-    error("CLIENT: ERROR opening socket");
+    error("error");
   }
    // Set up the server address struct & connect
   setupAddressStruct(&serverAddress, atoi(argv[3]), "localhost");
   int val = 1;
   setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)); //allow reuse of port
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
-    error("CLIENT: ERROR connecting");
+    error("error");
   }
   // Get input message from user
   //printf("CLIENT: Enter text to send to the server, and then hit enter: "); //this was being stored in ciphertext1
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
   long keysize = fsize(key);
   if(filesize > keysize)
   {
-    fprintf(stderr, "Error: key '%s' is too short", key);
+    fprintf(stderr, "error");
     exit(1);
   }
   // check keysize to input filesize, if keysize bigger, chop it to same size
@@ -169,8 +169,8 @@ int main(int argc, char *argv[]) {
   //Send "enc" to server for verification.
   if(justGonnaSendIt(socketFD, msg, strlen(msg)) == -1)
   {
-    perror("justgonnasendit");
-    fprintf(stderr, "We only sent %ld bytes because of error!\n", strlen(msg));
+    perror("error");
+    fprintf(stderr, "error");
     exit(1);
   }
 
@@ -201,13 +201,13 @@ int main(int argc, char *argv[]) {
   //receive encrypted file from server
   if(justGonnaTakeIt(socketFD, dencryptedFile, filesize) != 0)
   {
-    perror("justgonnatakeit");
-    fprintf(stderr, "dEncyrpted file is too big\n");
+    perror("error");
+    fprintf(stderr, "error");
     exit(1);
   }
 
   //send encrypted file and key to dec_client
-  fprintf(stderr, "dEncrypted filetext: %s\n", dencryptedFile);
+  fprintf(stderr, "error");
   //add \n to end of encryptedFile
   long dencyrptedLength = strlen(dencryptedFile);
 

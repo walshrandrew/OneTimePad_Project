@@ -41,7 +41,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
-  fprintf(stderr, "Bytes Received: %ld\n", len);
+  fprintf(stderr, "error");
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -51,7 +51,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
   int sent = 0;
   int remaining = len;
   int n;
-  fprintf(stderr, "Bytes started with: %ld\n", len);
+  fprintf(stderr, "error");
 
   while(sent < len)
   {
@@ -61,8 +61,8 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
-  fprintf(stderr, "Bytes sent to client from server: %ld\n", len);
-  fprintf(stderr, "Bytes remaining: %d\n", remaining);
+  fprintf(stderr, "error");
+  fprintf(stderr, "error");
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -72,7 +72,7 @@ char *readFiles(const char *file, long size)
   FILE *fp = fopen(file, "r");
   if(fp == NULL)
   {
-    fprintf(stderr, "Error, can't read NULL files\n");
+    fprintf(stderr, "error");
     exit(1);
   }
 
@@ -134,14 +134,14 @@ int main(int argc, char *argv[]){
 
   // Check usage & args
   if (argc < 2) { 
-    fprintf(stderr,"USAGE: %s port\n", argv[0]); 
+    fprintf(stderr,"error"); 
     exit(1);
   } 
   
   // Create the socket that will listen for connections
   int listenSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (listenSocket < 0) {
-    error("ERROR opening socket");
+    error("error");
   }
 
   // Set up the address struct for the server socket
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
 
   // Associate the socket to the port
   if (bind(listenSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0){
-    error("ERROR on binding");
+    error("error");
   }
 
   // Start listening for connetions. Allow up to 5 connections to queue up
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]){
     // Accept the connection request which creates a connection socket
     connectionSocket = accept(listenSocket, (struct sockaddr *)&clientAddress, &sizeOfClientInfo); 
     if (connectionSocket < 0){
-      error("ERROR on accept");
+      error("error");
     }
 
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
@@ -171,20 +171,20 @@ int main(int argc, char *argv[]){
     // Read the client's message from the socket
     charsRead = recv(connectionSocket, buffer, 255, 0);
     if (charsRead < 0){
-      error("ERROR reading from socket");
+      error("error");
     }
-    printf("SERVER: I received this from the client: \"%s\"\n", buffer);
+    printf("error");
 
     // Validate incoming connections. Close if not same as server name
     if(strcmp(buffer, "enc") != 0 )
     {
-      fprintf(stderr, "Wrong client tried to connect to me!\n");
+      fprintf(stderr, "error");
       close(connectionSocket);
       continue;
     }
     else 
     {
-      fprintf(stderr, "Successfully connected!\n");
+      fprintf(stderr, "error");
     }
 
     
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]){
     pid_t pid = fork();
     if(pid < 0) 
     {
-      perror("error forking your mom!"); 
+      perror("error"); 
       exit(1);
     }
     if(pid == 0) 
@@ -219,11 +219,11 @@ int main(int argc, char *argv[]){
 
 
       //read them and encyrpt the 'res' file
-      fprintf(stderr, "received filetext: %s\n", rescpy);
+      fprintf(stderr, "error");
 
       //encrypt here:
       otpEncryption(rescpy, keycpy, fileSize);
-      fprintf(stderr, "Encrypted filetext: %s\n", rescpy);
+      fprintf(stderr, "error");
 
       //send back
       justGonnaSendIt(connectionSocket, rescpy, fileSize);
