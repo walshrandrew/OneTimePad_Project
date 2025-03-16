@@ -225,8 +225,14 @@ int main(int argc, char *argv[]){
       otpEncryption(rescpy, keycpy, fileSize);
       fprintf(stderr, "error");
 
+      long recpysize = strlen(rescpy);
+      //send back size first
+      send(connectionSocket, &recpysize, sizeof(recpysize), 0);
+      recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
       //send back
       justGonnaSendIt(connectionSocket, rescpy, fileSize);
+      recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
+
       close(connectionSocket);
       exit(0);
     }

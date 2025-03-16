@@ -216,12 +216,18 @@ int main(int argc, char *argv[]){
       //read them and encyrpt the 'res' file
       fprintf(stderr, "error");
 
-      //encrypt here:
+      //dencrypt here:
       otpdecryption(rescpy, keycpy, fileSize);
       fprintf(stderr, "error");
 
+      long recpysize = strlen(rescpy);
+      //send back size first
+      send(connectionSocket, &recpysize, sizeof(recpysize), 0);
+      recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
       //send back
       justGonnaSendIt(connectionSocket, rescpy, fileSize);
+      recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
+
       close(connectionSocket);
       exit(0);
     }

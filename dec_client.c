@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
   const char *key = argv[2];
   const char *file = argv[1];
   char msg[3] = "dec";
-  char dencryptedFile[100000];
+  char *dencryptedBuffer = malloc(80000 * sizeof(char));
 
   // Check usage & args
   if (argc < 3) { 
@@ -197,27 +197,35 @@ int main(int argc, char *argv[]) {
   free(keyBuffer);
   recv(socketFD, ack, sizeof(ack), 0);
 
-
+  long dencryptedLength;
   //receive encrypted file from server
-  if(justGonnaTakeIt(socketFD, dencryptedFile, filesize) != 0)
-  {
-    perror("error");
-    fprintf(stderr, "error");
-    exit(1);
+  recv(socketFD, &dencryptedLength, sizeof(dencryptedLength), 0);
+  send(socketFD, ack, sizeof(ack), 0);
+
+  justGonnaTakeIt(socketFD, dencryptedBuffer, dencryptedLength);
+  send(socketFD, ack, sizeof(ack), 0);
+  fprintf(stderr, "\nReceived dencrypted Length: %ld\n", dencryptedLength);
+
+  // Resize buffer safely
+  char *temp = realloc(dencryptedBuffer, dencryptedLength + 2);
+  if (temp == NULL) {
+    fprintf(stderr, "Memory reallocation failed\n");
+    free(dencryptedBuffer);
+    close(socketFD);
+    return 1;
   }
+  dencryptedBuffer = temp;
+  // Add newline and Null-terminate
+  dencryptedBuffer[dencryptedLength] = '\n';
+  dencryptedBuffer[dencryptedLength + 1] = '\0';
+  fprintf(stderr,"\nAfter adding newline - Buffer content: '%s' (length: %ld)\n", dencryptedBuffer, strlen(dencryptedBuffer));
 
-  //send encrypted file and key to dec_client
-  fprintf(stderr, "error");
-  //add \n to end of encryptedFile
-  long dencyrptedLength = strlen(dencryptedFile) + 1;
-  fprintf(stderr, "\nLength of dencrypted file At first: %ld", dencyrptedLength);
-
-
-  dencryptedFile[dencyrptedLength] = '\n';
-  dencryptedFile[dencyrptedLength + 1] = '\0';
-  fprintf(stdout, "%s", dencryptedFile);
-  fprintf(stderr, "\nLength of dencrypted file: %ld", dencyrptedLength);
+  // UPdate length after modify buffer
+  dencryptedLength = strlen(dencryptedBuffer);
+  fprintf(stderr, "\nUpdated Length of encrypted file: %ld\n", dencryptedLength);
+  fprintf(stdout, "%s", dencryptedBuffer);
 
   close(socketFD); 
   return 0;
 }
+

@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
   const char *key = argv[2];
   const char *file = argv[1];
   char msg[4] = "enc";
-  char encryptedFile[100000];
+  char *encryptBuffer = malloc(80000 * sizeof(char));
 
   // Check usage & args
   if (argc < 3) { 
@@ -223,27 +223,34 @@ int main(int argc, char *argv[]) {
   free(keyBuffer);
   recv(socketFD, ack, sizeof(ack), 0);
 
-
-  //receive encrypted file from server
-  if(justGonnaTakeIt(socketFD, encryptedFile, filesize) != 0)
-  {
-    perror("error");
-    fprintf(stderr, "error");
-    exit(1);
+  long encryptedLength;
+  recv(socketFD, &encryptedLength, sizeof(encryptedLength), 0);
+  send(socketFD, ack, sizeof(ack), 0);  // Confirmation
+  
+  justGonnaTakeIt(socketFD, encryptBuffer, encryptedLength);
+  send(socketFD, ack, sizeof(ack), 0);  // Confirmation
+  fprintf(stderr, "\nReceived encrypted length: %ld\n", encryptedLength);
+  
+  // Resize buffer safely
+  char *temp = realloc(encryptBuffer, encryptedLength + 2);
+  if (temp == NULL) {
+      fprintf(stderr, "Memory reallocation failed\n");
+      free(encryptBuffer);
+      close(socketFD);
+      return 1;
   }
+  encryptBuffer = temp;
+  
+  // Add newline and null-terminate
+  encryptBuffer[encryptedLength] = '\n';
+  encryptBuffer[encryptedLength + 1] = '\0';
+  fprintf(stderr, "\nAfter adding newline - Buffer content: '%s' (length: %ld)\n", encryptBuffer, strlen(encryptBuffer));
 
-  //send encrypted file and key to dec_client
-  //add \n to end of encryptedFile
-  long encyrptedLength = strlen(encryptedFile) + 1;
-  fprintf(stderr, "\nLength of encrypted file: %ld", encyrptedLength);
-
-
-  encryptedFile[encyrptedLength] = '\n';
-  encryptedFile[encyrptedLength + 1] = '\0';
-  fprintf(stdout, "%s", encryptedFile);
-  fprintf(stderr, "\nLength of encrypted file: %ld", encyrptedLength);
-
-
-  close(socketFD); 
+  // Update the length after modifying the buffer
+  encryptedLength = strlen(encryptBuffer);
+  fprintf(stderr, "\nUpdated Length of encrypted file: %ld\n", encryptedLength);
+  fprintf(stdout, "%s", encryptBuffer);
+  
+  close(socketFD);
   return 0;
 }
