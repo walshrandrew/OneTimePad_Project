@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
   long encyrptedLength = strlen(encryptedFile);
 
   encryptedFile[encyrptedLength] = '\n';
-  encryptedFile[encyrptedLength + 1] = '\0';
+  //encryptedFile[encyrptedLength + 1] = '\0';
   fprintf(stdout, "%s", encryptedFile);
 
 
