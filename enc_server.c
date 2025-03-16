@@ -198,14 +198,21 @@ int main(int argc, char *argv[]){
       long fileSize, keySize;
       char keycpy[80000];
       char rescpy[80000];
+      char ack[3];
 
       //recv file first
-      recv(connectionSocket, &fileSize, sizeof(fileSize), 0); 
+      recv(connectionSocket, &fileSize, sizeof(fileSize), 0);
+      send(connectionSocket, ack, sizeof(ack), 0);
       justGonnaTakeIt(connectionSocket, rescpy, fileSize);   
+      send(connectionSocket, ack, sizeof(ack), 0);
+
 
       //recv key
-      recv(connectionSocket, &keySize, sizeof(keySize), 0);  
+      recv(connectionSocket, &keySize, sizeof(keySize), 0);
+      send(connectionSocket, ack, sizeof(ack), 0);
       justGonnaTakeIt(connectionSocket, keycpy, keySize);
+      send(connectionSocket, ack, sizeof(ack), 0);
+
 
       //read them and encyrpt the 'res' file
       fprintf(stderr, "received filetext: %s\n", rescpy);
@@ -223,10 +230,10 @@ int main(int argc, char *argv[]){
 
 
     // Send a Success message back to the client
-    charsRead = send(connectionSocket, "I am the server, and I got your message", 39, 0); 
-    if (charsRead < 0){
-      error("ERROR writing to socket");
-    }
+    //charsRead = send(connectionSocket, "I am the server, and I got your message", 39, 0); 
+    //if (charsRead < 0){
+      //error("ERROR writing to socket");
+    //}
     // Close the connection socket for this client
     close(connectionSocket); 
   }

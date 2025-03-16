@@ -170,17 +170,23 @@ int main(int argc, char *argv[]) {
 
   // Read plaintext and keygen files to a buffer to send to server
   char *fileBuffer = readFiles(file, filesize);   //used malloc, remember to free
-  char *keyBuffer = readFiles(key, keysize);       //used malloc, remember to free
+  char *keyBuffer = readFiles(key, keysize);      //used malloc, remember to free
+  char ack[3];                                    //ack buffer
 
   // send size of file, then file
   send(socketFD, &filesize, sizeof(filesize), 0);
+  recv(socketFD, ack, sizeof(ack), 0);
   justGonnaSendIt(socketFD, fileBuffer, filesize);
   free(fileBuffer);
+  recv(socketFD, ack, sizeof(ack), 0);
 
   // send size of key, then file
   send(socketFD, &keysize, sizeof(keysize), 0);
+  recv(socketFD, ack, sizeof(ack), 0);
   justGonnaSendIt(socketFD, keyBuffer, keysize);
   free(keyBuffer);
+  recv(socketFD, ack, sizeof(ack), 0);
+
 
   //receive encrypted file from server
   if(justGonnaTakeIt(socketFD, encryptedFile, filesize) != 0)
