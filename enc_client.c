@@ -99,6 +99,12 @@ char *readFiles(const char *file, long size)
     exit(1);
   }
 
+
+
+  // Read file content
+  size_t bytes = fread(buffer, 1, size, fp);
+  buffer[bytes] = '\0';  // Null terminate
+
   //Check file for bad characters (anything not valid):
   for (int i = 0; i < size; i++)
   {
@@ -107,12 +113,9 @@ char *readFiles(const char *file, long size)
       fclose(fp);
       free(buffer);
       exit(1);
+      fprintf(stderr, "error\n");
     }
   }
-
-  // Read file content
-  size_t bytes = fread(buffer, 1, size, fp);
-  buffer[bytes] = '\0';  // Null terminate
 
   // Debug: Print before newline removal
   fprintf(stderr, "[DEBUG] Before newline removal: '%s' (length: %zu)\n", buffer, bytes);
