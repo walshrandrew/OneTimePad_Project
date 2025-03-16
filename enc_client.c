@@ -100,7 +100,7 @@ char *readFiles(const char *file, long size)
   }
 
   //Check file for bad characters (anything not valid):
-  for (size_t i = 0; i < size; i++)
+  for (int i = 0; i < size; i++)
   {
     if(strchr(validChar, buffer[i]) == NULL)
     {
