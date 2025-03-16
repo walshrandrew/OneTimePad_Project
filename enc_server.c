@@ -61,7 +61,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
-  fprintf(stderr, "Bytes sent to server: %ld\n", len);
+  fprintf(stderr, "Bytes sent to client from server: %ld\n", len);
   fprintf(stderr, "Bytes remaining: %d\n", remaining);
   return n == -1? -1:0; //-1 failure, 0 success
 }
@@ -183,6 +183,7 @@ int main(int argc, char *argv[]){
       fprintf(stderr, "Successfully connected!\n");
     }
 
+    
     // ---- HAVING A BABY!!! ----
     pid_t pid = fork();
     if(pid < 0) {perror("error forking your mom!");}
@@ -198,18 +199,18 @@ int main(int argc, char *argv[]){
       recv(connectionSocket, &keySize, sizeof(keySize), 0);  
       justGonnaTakeIt(connectionSocket, key, keySize);
       //read them and encyrpt the 'res' file
-      //fprintf(stderr, "received filetext: %s\n", res);
+      fprintf(stderr, "received filetext: %s\n", res);
       //fprintf(stderr, "Received Key: %s\n", key);
 
       //encrypt here:
       otpEncryption(res, key, fileSize);
+      fprintf(stderr, "Encrypted filetext: %s\n", res);
 
       //send back
       justGonnaSendIt(connectionSocket, res, fileSize);
       close(connectionSocket);
       exit(0);
     }
-
 
 
 
