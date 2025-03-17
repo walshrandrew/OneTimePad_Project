@@ -159,7 +159,20 @@ int main(int argc, char *argv[]){
   // Accept a connection, blocking if one is not available until one connects
   while(1)
   {
-    // Accept the connection request which creates a connection socket
+
+
+    
+    // ---- HAVING A BABY!!! ----
+    pid_t pid = fork();
+    if(pid < 0) 
+    {
+      perror("error"); 
+      exit(1);
+    }
+    if(pid == 0) 
+    {
+      close(listenSocket);
+          // Accept the connection request which creates a connection socket
     connectionSocket = accept(listenSocket, (struct sockaddr *)&clientAddress, &sizeOfClientInfo); 
     if (connectionSocket < 0){
       error("error");
@@ -187,18 +200,6 @@ int main(int argc, char *argv[]){
     {
       fprintf(stderr, "error");
     }
-
-    
-    // ---- HAVING A BABY!!! ----
-    pid_t pid = fork();
-    if(pid < 0) 
-    {
-      perror("error"); 
-      exit(1);
-    }
-    if(pid == 0) 
-    {
-      close(listenSocket);
       // ---- BEGIN RECEIVING PACAKGES ----
       long fileSize, keySize;
       char keycpy[80000];
