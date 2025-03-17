@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -51,7 +52,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
   int sent = 0;
   int remaining = len;
   int n;
-  fprintf(stderr, "gonnasend: remaining: %d", remaining);
+  fprintf(stderr, "error");
 
   while(sent < len)
   {
@@ -61,8 +62,8 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
-  fprintf(stderr, "gonnasend:sent: %d", sent);
-  fprintf(stderr, "gonnasend: remaining: %d", remaining);
+  fprintf(stderr, "error");
+  fprintf(stderr, "error");
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -72,7 +73,6 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   int received = 0;
   int remaining = len;
   int n;
-  fprintf(stderr, "gonnatake:received: %d", received);
 
   while(received < len)
   {
@@ -82,8 +82,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
-  fprintf(stderr, "gonnatake:received: %d", received);
-  fprintf(stderr, "gonnatake: remaining: %d", remaining);;
+  fprintf(stderr, "error");
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -144,7 +143,14 @@ int main(int argc, char *argv[]) {
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
     error("error");
   }
-  //memset(buffer, '\0', sizeof(buffer));
+  // Get input message from user
+  //printf("CLIENT: Enter text to send to the server, and then hit enter: "); //this was being stored in ciphertext1
+  // Clear out the buffer array
+  memset(buffer, '\0', sizeof(buffer));
+  // Get input from the user, trunc to buffer - 1 chars, leaving \0
+  //fgets(buffer, sizeof(buffer) - 1, stdin);
+  // Remove the trailing \n that fgets adds
+  //buffer[strcspn(buffer, "\n")] = '\0'; 
 
   // check key length to input file length (both have '\0')
   long filesize = fsize(file);
@@ -162,10 +168,10 @@ int main(int argc, char *argv[]) {
 
 
   //Send "enc" to server for verification.
-  if(justGonnaSendIt(socketFD, msg, 4) == -1)
+  if(justGonnaSendIt(socketFD, msg, strlen(msg)) == -1)
   {
     perror("error");
-    fprintf(stderr, "error: tried Sending 'dec' to server");
+    fprintf(stderr, "error");
     exit(1);
   }
 
@@ -175,7 +181,7 @@ int main(int argc, char *argv[]) {
   char *keyBuffer = readFiles(key, keysize);      //used malloc, remember to free
   filesize = strlen(fileBuffer);
   keysize = strlen(keyBuffer);
-  char ack[4];                                    //ack buffer
+  char ack[3];                                    //ack buffer
 
   // send size of file, then file
   
