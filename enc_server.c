@@ -120,7 +120,7 @@ void otpEncryption(char *text, char* key, long size)
 
 int main(int argc, char *argv[]){
   int connectionSocket, charsRead;
-  char buffer[256];
+  char buffer[4];
   char hostName[256];
   char text[80000];
   char key[80000];
@@ -167,13 +167,12 @@ int main(int argc, char *argv[]){
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
 
     // Get the message from the client and display it
-    memset(buffer, '\0', 256);
-    // Read the client's message from the socket
-    charsRead = recv(connectionSocket, buffer, 255, 0);
-    if (charsRead < 0){
-      error("error");
-    }
-    printf("error");
+    //memset(buffer, '\0', 4);
+    // Read the client's message from the socke
+    justGonnaTakeIt(connectionSocket, buffer, 3);
+    buffer[3] = '\0';
+    fprintf(stderr, "I received this from the client: %s\n", buffer);
+
 
     // Validate incoming connections. Close if not same as server name
     if(strcmp(buffer, "enc") != 0 )
