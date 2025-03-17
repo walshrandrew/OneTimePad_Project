@@ -32,7 +32,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   int received = 0;
   int remaining = len;
   int n;
-
+  fprintf(stderr, "gonnatake:received: %d", received);
   while(received < len)
   {
     n = recv(s, buf + received, remaining, 0);
@@ -41,7 +41,8 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
-  fprintf(stderr, "error");
+  fprintf(stderr, "gonnatake:received: %d", received);
+  fprintf(stderr, "gonnatake: remaining: %d", remaining);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -51,7 +52,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
   int sent = 0;
   int remaining = len;
   int n;
-  fprintf(stderr, "error");
+  fprintf(stderr, "gonnasend: remaining: %d", remaining);
 
   while(sent < len)
   {
@@ -61,8 +62,8 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
-  fprintf(stderr, "error");
-  fprintf(stderr, "error");
+  fprintf(stderr, "gonnasend:sent: %d", sent);
+  fprintf(stderr, "gonnasend: remaining: %d", remaining);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -165,8 +166,7 @@ int main(int argc, char *argv[]){
     //memset(buffer, '\0', 256);
     // Read the client's message from the socket
 
-    justGonnaTakeIt(connectionSocket, buffer, 3);
-    buffer[3] = '\0';
+    justGonnaTakeIt(connectionSocket, buffer, 4);
     fprintf(stderr, "I received this from the client: %s\n", buffer);
 
     // Validate incoming connections. Close if not same as server name
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]){
       long fileSize, keySize;
       char keycpy[80000];
       char rescpy[80000];
-      char ack[3];
+      char ack[4];
 
       //recv file first
       recv(connectionSocket, &fileSize, sizeof(fileSize), 0);
@@ -212,8 +212,8 @@ int main(int argc, char *argv[]){
       
       //dencrypt here:
       otpdecryption(rescpy, keycpy, fileSize);
-      fprintf(stderr, "done...\n");
-      fprintf(stderr, "\nBuffer content: '%s' (length: %ld)\n", rescpy, strlen(rescpy));
+      fprintf(stderr, "encyrption done!\n");
+      fprintf(stderr, "\nLength: %ld", strlen(rescpy));
 
       long recpysize = strlen(rescpy);
       //send back size first

@@ -32,7 +32,7 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
   int received = 0;
   int remaining = len;
   int n;
-
+  fprintf(stderr, "gonnatake:received: %d", received);
   while(received < len)
   {
     n = recv(s, buf + received, remaining, 0);
@@ -41,7 +41,8 @@ int justGonnaTakeIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = received; //number received
-  fprintf(stderr, "error");
+  fprintf(stderr, "gonnatake:received: %d", received);
+  fprintf(stderr, "gonnatake: remaining: %d", remaining);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -51,7 +52,7 @@ int justGonnaSendIt(int s, char *buf, size_t len)
   int sent = 0;
   int remaining = len;
   int n;
-  fprintf(stderr, "error");
+  fprintf(stderr, "gonnasend: remaining: %d", remaining);
 
   while(sent < len)
   {
@@ -61,8 +62,8 @@ int justGonnaSendIt(int s, char *buf, size_t len)
     remaining -= n;
   }
   len = sent; //number sent to server
-  fprintf(stderr, "error");
-  fprintf(stderr, "error");
+  fprintf(stderr, "gonnasend:sent: %d", sent);
+  fprintf(stderr, "gonnasend: remaining: %d", remaining);
   return n == -1? -1:0; //-1 failure, 0 success
 }
 
@@ -167,20 +168,19 @@ int main(int argc, char *argv[]){
     printf("SERVER: Connected to client running at host %d port %d\n", ntohs(clientAddress.sin_addr.s_addr), ntohs(clientAddress.sin_port));
 
     // Read the client's message from the socke
-    justGonnaTakeIt(connectionSocket, buffer, 3);
-    buffer[3] = '\0';
+    justGonnaTakeIt(connectionSocket, buffer, 4);
     fprintf(stderr, "I received this from the client: %s\n", buffer);
 
     // Validate incoming connections. Close if not same as server name
     if(strcmp(buffer, "enc") != 0 )
     {
-      fprintf(stderr, "error");
+      fprintf(stderr, "error: wrong client\n");
       close(connectionSocket);
       continue;
     }
     else 
     {
-      fprintf(stderr, "error");
+      fprintf(stderr, "connected!\n");
     }
 
     
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]){
       long fileSize, keySize;
       char keycpy[80000];
       char rescpy[80000];
-      char ack[3];
+      char ack[4];
 
       //recv file first
       recv(connectionSocket, &fileSize, sizeof(fileSize), 0);
@@ -215,17 +215,20 @@ int main(int argc, char *argv[]){
 
 
       //read them and encyrpt the 'res' file
-      fprintf(stderr, "error");
+      fprintf(stderr, "sending for encryption\n");
 
       //encrypt here:
       otpEncryption(rescpy, keycpy, fileSize);
-      fprintf(stderr, "error");
+      fprintf(stderr, "encyrption done!\n");
+      fprintf(stderr, "\nLength: %ld", strlen(rescpy));
+
 
       long recpysize = strlen(rescpy);
       //send back size first
       send(connectionSocket, &recpysize, sizeof(recpysize), 0);
       recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
       //send back
+      fprintf(stderr, "sending to enc_client...");
       justGonnaSendIt(connectionSocket, rescpy, fileSize);
       recv(connectionSocket, ack, sizeof(ack), 0); //receive confirmation
 
