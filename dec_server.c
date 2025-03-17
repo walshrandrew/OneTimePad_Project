@@ -163,7 +163,8 @@ int main(int argc, char *argv[]){
 
     // Get the message from the client and display it
     //memset(buffer, '\0', 256);
-    // Read the client's message from the socke
+    // Read the client's message from the socket
+
     justGonnaTakeIt(connectionSocket, buffer, 3);
     buffer[3] = '\0';
     fprintf(stderr, "I received this from the client: %s\n", buffer);

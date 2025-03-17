@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -148,7 +149,7 @@ int main(int argc, char *argv[]) {
   char buffer[256];
   const char *key = argv[2];
   const char *file = argv[1];
-  char *msg = "enc";
+  char msg[4] = "enc";
   char *encryptBuffer = malloc(80000 * sizeof(char));
 
   // Check usage & args
@@ -168,9 +169,14 @@ int main(int argc, char *argv[]) {
   if (connect(socketFD, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0){
     error("error");
   }
-
+  // Get input message from user
+  //printf("CLIENT: Enter text to send to the server, and then hit enter: "); //this was being stored in ciphertext1
   // Clear out the buffer array
-  //memset(msg, '\0', strlen(msg));
+  memset(buffer, '\0', sizeof(buffer));
+  // Get input from the user, trunc to buffer - 1 chars, leaving \0
+  //fgets(buffer, sizeof(buffer) - 1, stdin);
+  // Remove the trailing \n that fgets adds
+  //buffer[strcspn(buffer, "\n")] = '\0'; 
 
   // check key length to input file length (both have '\0')
   long filesize = fsize(file);
@@ -188,13 +194,13 @@ int main(int argc, char *argv[]) {
 
 
   //Send "enc" to server for verification.
-  if(send(socketFD, msg, strlen(msg), 0) == -1)
+  if(justGonnaSendIt(socketFD, msg, strlen(msg)) == -1)
   {
     perror("error");
-    fprintf(stderr, "Sending enc to server");
+    fprintf(stderr, "error");
     exit(1);
   }
-  else{fprintf(stderr, "send msg %s to server", msg);}
+
 
   // Read plaintext and keygen files to a buffer to send to server
   char *fileBuffer = readFiles(file, filesize);   //used malloc, remember to free
