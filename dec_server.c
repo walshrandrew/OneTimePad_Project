@@ -172,7 +172,7 @@ int main(int argc, char *argv[]){
     printf("SERVER: I received this from the client: \"%s\"\n", buffer);
 
     // Validate incoming connections. Close if not same as server name
-    if(strcmp(buffer, "dec") != 0 )
+    if(strncmp(buffer, "dec", 3) != 0 )
     {
       fprintf(stderr, "closing connection socket");
       close(connectionSocket);

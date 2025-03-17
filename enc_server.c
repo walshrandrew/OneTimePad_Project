@@ -177,7 +177,7 @@ int main(int argc, char *argv[]){
     printf("error");
 
     // Validate incoming connections. Close if not same as server name
-    if(strcmp(buffer, "enc") != 0 )
+    if(strncmp(buffer, "enc", 3) != 0 )
     {
       fprintf(stderr, "error");
       close(connectionSocket);
