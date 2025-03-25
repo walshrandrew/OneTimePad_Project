@@ -3,6 +3,13 @@
 - Combines multi-processing code with socket-based inter-process communication.
 - Runs using CLI support Unix features like input/output redirection, and job control.
 
+Compilation:  
+gcc --std=gnu99 -o enc_server enc_server.c  
+gcc --std=gnu99 -o enc_client enc_client.c  
+gcc --std=gnu99 -o dec_server dec_server.c  
+gcc --std=gnu99 -o dec_client dec_client.c  
+gcc --std=gnu99 -o keygen keygen.c  
+  
 Example usage:  
 $ cat plaintext1  
 THE RED GOOSE FLIES AT MIDNIGHT STOP  
